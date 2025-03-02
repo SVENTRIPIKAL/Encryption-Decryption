@@ -1,30 +1,30 @@
-fun main() {
-    println(encryptMessage("we found a treasure!"))
-}
+fun main() = println(encryptWithKey("welcome to hyperskill", 5))
 
 /**
  *  returns a new string with each
- *  character shifted from the back
- *  of the alphabet starting from z-a.
+ *  character shifted a number of times
+ *  to the right according to the key value.
+ *  Incrementing restarts at 'a' after 'z'.
  *  Keeps punctuations & spaces unedited
  *  @param string string message to encrypt with cypher
+ *  @param key determines the number of Right shifts
  */
-private fun encryptMessage(string: String): String {
-    // create alphabet list
-    val alphabet = mutableListOf<Char>()
-    for (letter in 'a'..'z') alphabet += letter
-
+private fun encryptWithKey(string: String, key: Int): String {
+    // create alphabet range
+    val alphabetRange = ('a'..'z')
     // loop through string & create lowercase output
     var output = ""
     for (char in string.lowercase()) {
-        // get index of letter in alphabet
-        val letterIndex = alphabet.indexOf(char)
         // update output
-        output += when (letterIndex) {
+        output += when {
             // keep non-letters unedited
-            -1 -> char
-            // shift letter with z-a letter shift
-            else -> alphabet[alphabet.lastIndex - letterIndex]
+            char !in alphabetRange -> char
+            // add key shift & subtract 26 if greater than range
+            else -> {
+                var shifted = char + key
+                if (shifted > alphabetRange.last) shifted -= 26
+                shifted
+            }
         }
     }
     return output

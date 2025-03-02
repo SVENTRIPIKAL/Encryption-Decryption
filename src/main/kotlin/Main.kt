@@ -12,7 +12,7 @@ fun main() {
  *  to the Left/Right according to the
  *  provided Mode & Key value
  *  @param mode string value deciding encryption/decryption
- *  @param message string message to encrypt/decrypt with cypher
+ *  @param message string message to encrypt/decrypt with key
  *  @param key determines the number of Left/Right shifts
  */
 private fun encryptDecryptWithKey(mode: String, message: String, key: Int): String {

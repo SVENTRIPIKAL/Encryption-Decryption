@@ -1,5 +1,5 @@
 const val ASTERISK = "*"
-const val ILLEGAL_INPUT = "Illegal Flag Argument - for \"*\""
+const val ILLEGAL_INPUT = "IllegalArgumentException - for \"*\""
 
 fun main(args: Array<String>) {
     try {
@@ -9,7 +9,7 @@ fun main(args: Array<String>) {
             key = arguments["key"]!!.toInt(),
             data = arguments["data"]!!
         ))
-    } catch (e: Exception) {
+    } catch (e: IllegalArgumentException) {
         println(e.localizedMessage)
     }
 }
@@ -22,37 +22,39 @@ fun main(args: Array<String>) {
  *  @throws IllegalArgumentException
  */
 private fun groupCliArguments(args: Array<String>): Map<String, String> {
-    // check if array empty
-    if (args.isEmpty()) throw IllegalArgumentException(
-        ILLEGAL_INPUT.replace(ASTERISK, "Empty Array")
-    )
+    // check if array empty or contains blank arguments
+    if (args.size != 6 || args.contains(""))
+        throw IllegalArgumentException(
+            ILLEGAL_INPUT.replace(ASTERISK, "Missing Arguments")
+        )
 
     // map for flag & argument values
     val map = mutableMapOf<String, String>()
 
     // lambda flag check
-    val isNotFlag = { s: String -> s !in listOf("-mode", "-key", "-data") }
+    val isNotFlag = { f: String -> f !in listOf("-mode", "-key", "-data") }
 
-    // TODO - check mode/key are valid else throw exception
+    // lambda mode check
+    val isValidMode = { m: String -> m in listOf("enc", "dec") }
+
+    // lambda key check
+    val isValidKey = { k: String -> Character.isDigit(k.first()) }
+
     // organize arguments
     for (i in args.indices step 2) {
-        // check index in range
-        if (i.inc() != args.lastIndex.inc()) {
-            // current index
-            when (args[i]) {
-                "-mode" -> {    // check next index not flag & update with index else default
-                    map["mode"] = if (isNotFlag(args[i.inc()])) args[i.inc()] else "enc"
-                }
-                "-key" -> {    // check next index not flag & update with index else default
-                    map["key"] = if (isNotFlag(args[i.inc()]) &&
-                        Character.isDigit(args[i.inc()].first())
-                    ) args[i.inc()] else "0"
-                }
-                "-data" -> {    // check next index not flag & update with index else default
-                    map["data"] = if (isNotFlag(args[i.inc()])) args[i.inc()] else ""
-                }               // throw exception for all other cases
-                else -> throw IllegalArgumentException(ILLEGAL_INPUT.replace(ASTERISK, args[i]))
+        // current & next indices
+        val currentI = args[i]; val nextI = args[i.inc()]
+        when (currentI) {
+            "-mode" -> {    // check next index valid mode else default
+                map["mode"] = if (isValidMode(nextI)) nextI else "enc"
             }
+            "-key" -> {     // check next index valid key else default
+                map["key"] = if (isValidKey(nextI)) nextI else "0"
+            }
+            "-data" -> {    // check next index not flag else default
+                map["data"] = if (isNotFlag(nextI)) nextI else ""
+            }               // throw exception for unknown flags
+            else -> throw IllegalArgumentException(ILLEGAL_INPUT.replace(ASTERISK, currentI))
         }
     }
     // return arguments

@@ -3,42 +3,15 @@ const val ILLEGAL_INPUT = "Illegal Flag Argument - for \"*\""
 
 fun main(args: Array<String>) {
     try {
-        when {
-            args.isEmpty() -> throw IllegalArgumentException(
-                ILLEGAL_INPUT.replace(ASTERISK, "Empty Array")
-            )
-            else -> {
-                val arguments = groupCliArguments(args)
-                println(encryptDecryptWithKey(
-                    mode = arguments["mode"]!!,
-                    key = arguments["key"]!!.toInt(),
-                    data = arguments["data"]!!
-                ))
-            }
-        }
+        val arguments = groupCliArguments(args)
+        println(encryptDecryptWithKey(
+            mode = arguments["mode"]!!,
+            key = arguments["key"]!!.toInt(),
+            data = arguments["data"]!!
+        ))
     } catch (e: Exception) {
         println(e.localizedMessage)
     }
-}
-
-/**
- *  returns a new string with each
- *  character shifted a number of times
- *  to the Left/Right according to the
- *  provided Mode & Key value
- *  @param mode string value deciding encryption/decryption
- *  @param key determines the number of Left/Right shifts
- *  @param data string message to encrypt/decrypt with key
- */
-private fun encryptDecryptWithKey(mode: String, key: Int, data: String): String {
-    val logic = { char: Char ->
-        when (mode) {
-            "enc" -> char + key
-            "dec" -> char - key
-            else -> char
-        }
-    }
-    return data.map { logic(it) }.joinToString("")
 }
 
 /**
@@ -49,12 +22,18 @@ private fun encryptDecryptWithKey(mode: String, key: Int, data: String): String 
  *  @throws IllegalArgumentException
  */
 private fun groupCliArguments(args: Array<String>): Map<String, String> {
+    // check if array empty
+    if (args.isEmpty()) throw IllegalArgumentException(
+        ILLEGAL_INPUT.replace(ASTERISK, "Empty Array")
+    )
+
     // map for flag & argument values
     val map = mutableMapOf<String, String>()
 
     // lambda flag check
     val isNotFlag = { s: String -> s !in listOf("-mode", "-key", "-data") }
 
+    // TODO - check mode/key are valid else throw exception
     // organize arguments
     for (i in args.indices step 2) {
         // check index in range
@@ -78,4 +57,24 @@ private fun groupCliArguments(args: Array<String>): Map<String, String> {
     }
     // return arguments
     return map
+}
+
+/**
+ *  returns a new string with each
+ *  character shifted a number of times
+ *  to the Left/Right according to the
+ *  provided Mode & Key value
+ *  @param mode string value deciding encryption/decryption
+ *  @param key determines the number of Left/Right shifts
+ *  @param data string message to encrypt/decrypt with key
+ */
+private fun encryptDecryptWithKey(mode: String, key: Int, data: String): String {
+    val logic = { char: Char ->
+        when (mode) {
+            "enc" -> char + key
+            "dec" -> char - key
+            else -> char
+        }
+    }
+    return data.map { logic(it) }.joinToString("")
 }

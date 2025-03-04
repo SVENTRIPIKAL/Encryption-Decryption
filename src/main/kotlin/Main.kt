@@ -8,13 +8,13 @@ const val ARGS_MISSING = "Missing Arguments"
 fun main(args: Array<String>) {
     try {
         val arguments = parseCliArguments(args)
-        println(parseEncryptDecrypt(
+        parseEncryptDecrypt(
             mode = arguments["mode"]!!,
             key = arguments["key"]!!.toInt(),
             data = arguments["data"]!!,
             inFile = arguments["in"]!!,
             outFile = arguments["out"]!!
-        ))
+        )
     } catch (e: IllegalArgumentException) {
         println(e.localizedMessage)
     }

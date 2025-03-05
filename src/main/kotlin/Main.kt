@@ -1,4 +1,5 @@
 import java.io.File
+import javax.swing.text.html.HTML.Tag.HEAD
 
 const val ASTERISK = "*"
 const val ILLEGAL_INPUT = "IllegalArgument Error - for \"*\""
@@ -170,8 +171,8 @@ private fun parseEncryptDecrypt(
                 isValidFormat(outFile) -> {
                     // create writer for out-file
                     val writer = File("${defaultPath}$outFile")
-                    // create empty file
-                    writer.createNewFile()
+                    // create / overwrite empty file
+                    writer.writeText("")
                     // read from in-file & write to out-file
                     reader.useLines {
                         it.forEach {  line ->
@@ -194,8 +195,8 @@ private fun parseEncryptDecrypt(
                 else -> println(encrypt(inputData))
             }
         }   // input blank
-        else -> {   // create file if out-file is a valid file format
-            if (isValidFormat(outFile)) File("${defaultPath}$outFile").createNewFile()
+        else -> {   // create / overwrite file if out-file is a valid file format
+            if (isValidFormat(outFile)) File("${defaultPath}$outFile").writeText(inputData)
             else println(inputData)
         }
     }

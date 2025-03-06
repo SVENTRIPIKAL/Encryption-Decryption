@@ -1,21 +1,16 @@
 import java.io.File
 import javax.swing.text.html.HTML.Tag.HEAD
 
-const val ASTERISK = "*"
-const val ILLEGAL_INPUT = "IllegalArgument Error - for \"*\""
-const val ARGS_NUMBER = "Number of Arguments"
-const val ARGS_MISSING = "Missing Arguments"
-
 fun main(args: Array<String>) {
     try {
         val arguments = parseCliArguments(args)
         parseEncryptDecrypt(
-            alg = arguments["alg"]!!,
-            mode = arguments["mode"]!!,
-            key = arguments["key"]!!.toInt(),
-            data = arguments["data"]!!,
-            inFile = arguments["in"]!!,
-            outFile = arguments["out"]!!
+            alg = arguments[ARG_ALG]!!,
+            mode = arguments[ARG_MODE]!!,
+            key = arguments[ARG_KEY]!!.toInt(),
+            data = arguments[ARG_DATA]!!,
+            inFile = arguments[ARG_IN]!!,
+            outFile = arguments[ARG_OUT]!!
         )
     } catch (e: IllegalArgumentException) {
         println(e.localizedMessage)
@@ -32,29 +27,32 @@ fun main(args: Array<String>) {
 private fun parseCliArguments(args: Array<String>): Map<String, String> {
     // check if array empty or contains blank arguments
     when {
-        args.size !in 6..12 -> throw IllegalArgumentException(
-            ILLEGAL_INPUT.replace(ASTERISK, ARGS_NUMBER)
+        args.size !in SIX..TWELVE -> throw IllegalArgumentException(
+            ILLEGAL_INPUT.replace(ASTERISK, ERROR_NUMBER)
         )
-        args.contains("") -> throw IllegalArgumentException(
-            ILLEGAL_INPUT.replace(ASTERISK, ARGS_MISSING)
+        args.contains(EMPTY_STRING) -> throw IllegalArgumentException(
+            ILLEGAL_INPUT.replace(ASTERISK, ERROR_MISSING)
         )
     }
     // map default argument values
     val map = mutableMapOf(
-        "alg" to "shift", "mode" to "enc", "key" to "0",
-        "data" to "", "in" to "", "out" to ""
+        ARG_ALG to ALG_SHIFT, ARG_MODE to MODE_ENC, ARG_KEY to "$ZERO",
+        ARG_DATA to EMPTY_STRING, ARG_IN to EMPTY_STRING, ARG_OUT to EMPTY_STRING
     )
     // trim array arguments
     val array = args.map { it.trim() }.toTypedArray()
 
     // lambda flag check
-    val isNotFlag = { f: String -> f !in listOf("-alg", "-mode", "-key", "-data", "-in", "-out") }
+    val isNotFlag = { f: String -> f !in listOf(
+        "-$ARG_ALG", "-$ARG_MODE", "-$ARG_KEY",
+        "-$ARG_DATA", "-$ARG_IN", "-$ARG_OUT")
+    }
 
     // lambda algorithm check
-    val isValidAlgo = { a: String -> a in listOf("shift", "unicode") }
+    val isValidAlgo = { a: String -> a in listOf(ALG_SHIFT, ALG_UNICODE) }
 
     // lambda mode check
-    val isValidMode = { m: String -> m in listOf("enc", "dec") }
+    val isValidMode = { m: String -> m in listOf(MODE_ENC, MODE_DEC) }
 
     // lambda key check
     val isValidKey = { k: String -> Character.isDigit(k.first()) }
@@ -63,27 +61,27 @@ private fun parseCliArguments(args: Array<String>): Map<String, String> {
     val checkIfElse = { x: (String) -> Boolean, y: String, z: String -> if (x(y)) y else z }
 
     // organize arguments
-    for (i in array.indices step 2) {
+    for (i in array.indices step TWO) {
         // current & next indices
         val currentI = array[i]; val nextI = array[i.inc()]
         when (currentI) {
-            "-alg" -> {    // check next index valid algo else default
-                map["alg"] = checkIfElse(isValidAlgo, nextI, "shift")
+            "-$ARG_ALG" -> {    // check next index valid algo else default
+                map[ARG_ALG] = checkIfElse(isValidAlgo, nextI, ALG_SHIFT)
             }
-            "-mode" -> {    // check next index valid mode else default
-                map["mode"] = checkIfElse(isValidMode, nextI, "enc")
+            "-$ARG_MODE" -> {    // check next index valid mode else default
+                map[ARG_MODE] = checkIfElse(isValidMode, nextI, MODE_ENC)
             }
-            "-key" -> {     // check next index valid key else default
-                map["key"] = checkIfElse(isValidKey, nextI, "0")
+            "-$ARG_KEY" -> {     // check next index valid key else default
+                map[ARG_KEY] = checkIfElse(isValidKey, nextI, "$ZERO")
             }
-            "-data" -> {    // check next index not flag else default
-                map["data"] = checkIfElse(isNotFlag, nextI, "")
+            "-$ARG_DATA" -> {    // check next index not flag else default
+                map[ARG_DATA] = checkIfElse(isNotFlag, nextI, EMPTY_STRING)
             }
-            "-in" -> {      // check next index not flag else default
-                map["in"] = checkIfElse(isNotFlag, nextI, "")
+            "-$ARG_IN" -> {      // check next index not flag else default
+                map[ARG_IN] = checkIfElse(isNotFlag, nextI, EMPTY_STRING)
             }
-            "-out" -> {     // check next index not flag else default
-                map["out"] = checkIfElse(isNotFlag, nextI, "")
+            "-$ARG_OUT" -> {     // check next index not flag else default
+                map[ARG_OUT] = checkIfElse(isNotFlag, nextI, EMPTY_STRING)
             }
             // throw exception for unknown flags
             else -> throw IllegalArgumentException(ILLEGAL_INPUT.replace(ASTERISK, currentI))
@@ -115,10 +113,10 @@ private fun parseEncryptDecrypt(
     outFile: String
 ) {
     // default read/write path
-    val defaultPath = System.getProperty("user.dir") + "${File.separator}.test${File.separator}"
+    val defaultPath = System.getProperty(USER_DIR) + "${File.separator}.test${File.separator}"
 
     // regex capturing file + extension
-    val fileFormatRegex = "^\\w+([.][A-Za-z0-9]{3,8})".toRegex()
+    val fileFormatRegex = FILE_EXT_REGEX.toRegex()
 
     // lambda checking if string is valid file format
     val isValidFormat = { s: String -> s.matches(fileFormatRegex) }
@@ -126,30 +124,30 @@ private fun parseEncryptDecrypt(
     // lambda encrypt/decrypt by mode + algo
     val logic = { char: Char ->
         when (alg) {
-            "shift" -> {
+            ALG_SHIFT -> {  // shift characters from front/back of alphabet
                 val alphaRange = 'a'..'z'
                 val lowerCased = char.lowercase().first()
-                if (lowerCased !in alphaRange) char
+                if (lowerCased !in alphaRange) char // return char if not letter
                 else {
                     when (mode) {
-                        "enc" -> {
-                            val temp = lowerCased + key
-                            if (temp > alphaRange.last) char + key - 26
+                        MODE_ENC -> {   // encrypt
+                            val temp = lowerCased + key // if pass z, count from a
+                            if (temp > alphaRange.last) char + key - TWO_SIX
                             else char + key
                         }
-                        "dec" -> {
-                            val temp = lowerCased - key
-                            if (temp < alphaRange.first) char - key + 26
+                        MODE_DEC -> {   // decrypt
+                            val temp = lowerCased - key // if pass a, count from z
+                            if (temp < alphaRange.first) char - key + TWO_SIX
                             else char - key
                         }
                         else -> char
                     }
                 }
             }
-            "unicode" -> {
+            ALG_UNICODE -> {    // shift characters +/- key value
                 when (mode) {
-                    "enc" -> char + key
-                    "dec" -> char - key
+                    MODE_ENC -> char + key
+                    MODE_DEC -> char - key
                     else -> char
                 }
             }
@@ -158,7 +156,7 @@ private fun parseEncryptDecrypt(
     }
 
     // lambda returns string encrypted
-    val encrypt = { s: String -> s.map { c -> logic(c) }.joinToString("") }
+    val encrypt = { s: String -> s.map { c -> logic(c) }.joinToString(EMPTY_STRING) }
 
     // check if data blank else assign infile value
     val inputData = data.ifBlank { inFile }
@@ -172,7 +170,7 @@ private fun parseEncryptDecrypt(
                     // create writer for out-file
                     val writer = File("${defaultPath}$outFile")
                     // create / overwrite empty file
-                    writer.writeText("")
+                    writer.writeText(EMPTY_STRING)
                     // read from in-file & write to out-file
                     reader.useLines {
                         it.forEach {  line ->

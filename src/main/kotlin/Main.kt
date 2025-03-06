@@ -5,12 +5,12 @@ fun main(args: Array<String>) {
     try {
         val arguments = parseCliArguments(args)
         parseEncryptDecrypt(
-            alg = arguments[ARG_ALG]!!,
-            mode = arguments[ARG_MODE]!!,
-            key = arguments[ARG_KEY]!!.toInt(),
-            data = arguments[ARG_DATA]!!,
-            inFile = arguments[ARG_IN]!!,
-            outFile = arguments[ARG_OUT]!!
+            alg = arguments[ARG_ALG] ?: EMPTY_STRING,
+            mode = arguments[ARG_MODE] ?: EMPTY_STRING,
+            key = arguments[ARG_KEY]?.toInt() ?: ZERO,
+            data = arguments[ARG_DATA] ?: EMPTY_STRING,
+            inFile = arguments[ARG_IN] ?: EMPTY_STRING,
+            outFile = arguments[ARG_OUT] ?: EMPTY_STRING
         )
     } catch (e: IllegalArgumentException) {
         println(e.localizedMessage)
@@ -63,7 +63,7 @@ private fun parseCliArguments(args: Array<String>): Map<String, String> {
     // organize arguments
     for (i in array.indices step TWO) {
         // current & next indices
-        val currentI = array[i]; val nextI = array[i.inc()]
+        val currentI = array[i].lowercase(); val nextI = array[i.inc()]
         when (currentI) {
             "-$ARG_ALG" -> {    // check next index valid algo else default
                 map[ARG_ALG] = checkIfElse(isValidAlgo, nextI, ALG_SHIFT)

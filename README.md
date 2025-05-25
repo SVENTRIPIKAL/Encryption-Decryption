@@ -1,6 +1,6 @@
 # Encryption, Decryption
 
-A main program that parses & encrypts/decrypts data according to its \
+A terminal program that parses & encrypts/decrypts data according to its \
 provided algorithm, mode, & key arguments. The program is also able to \
 read/write data to/from selected files within the default **.test** directory inside \
 the program's parent directory. If in/out files are not specified, then the \
